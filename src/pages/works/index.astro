@@ -1,0 +1,296 @@
+---
+import ThreeApp from "@components/threlte/ThreeApp.svelte";
+import WorkLink from "@components/WorkLink.astro";
+import Filters from "@components/Filters.svelte";
+import BaseLayout from "@layouts/BaseLayout.astro";
+
+import { getCollection } from "astro:content";
+import { joinURL } from "ufo";
+
+const logotypes = import.meta.glob("content/logotypes/*.svg", {
+  eager: true,
+  as: "raw",
+});
+
+const infinityIfNow = (year: number | "now") =>
+  year === "now" ? Infinity : year;
+
+const works = (await getCollection("works")).toSorted((a, b) => {
+  const endYears = [
+    infinityIfNow(a.data.year ?? a.data.endYear),
+    infinityIfNow(b.data.year ?? b.data.endYear),
+  ];
+  const startYears = [
+    a.data.year ?? a.data.startYear,
+    b.data.year ?? b.data.startYear,
+  ];
+
+  const endYearsComparison = endYears[0] - endYears[1];
+  if (endYearsComparison !== 0) return -endYearsComparison;
+
+  const startYearsComparison = startYears[0] - startYears[1];
+  return -startYearsComparison;
+});
+---
+
+<script>
+  import { bindStoreToSearchParam } from "@lib/utils/bindStoreToSearchParam";
+  import { activeIndex } from "./_index_stores";
+  import { filtersState } from "@features/filters/store";
+
+  const applyActiveClass = (children: HTMLCollection, activeIndex: number) => {
+    [...children].forEach((chEl) => chEl.classList.remove("active"));
+    children[activeIndex].classList.add("active");
+  };
+
+  bindStoreToSearchParam("filter", filtersState, { replaceHistory: true });
+
+  document.addEventListener("astro:page-load", () => {
+    document
+      .querySelectorAll(".logotypes[data-on-click-randomize-logotype]")
+      .forEach((el) => {
+        applyActiveClass(el.children, activeIndex.value);
+
+        el.addEventListener("click", (_evt) => {
+          activeIndex.set((activeIndex.get() + 1) % el.children.length);
+          applyActiveClass(el.children, activeIndex.value);
+        });
+      });
+  });
+
+  filtersState.listen((filters) => {
+    const activeFilters = Object.entries(filters)
+      .filter(([_k, v]) => v)
+      .map(([k, _v]) => k);
+
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        document
+          .querySelectorAll(".worksContainer")
+          .forEach((el) =>
+            el.setAttribute("data-active-filters", activeFilters.join(" "))
+          );
+      });
+    } else {
+      document
+        .querySelectorAll(".worksContainer")
+        .forEach((el) =>
+          el.setAttribute("data-active-filters", activeFilters.join(" "))
+        );
+    }
+  });
+</script>
+
+<BaseLayout title="Homepage">
+  <div class="sticky-container" transition:persist>
+    <div class="mainshape-area overlay">
+      <button class="logotypes" data-on-click-randomize-logotype>
+        {Object.values(logotypes).map((value) => <Fragment set:html={value} />)}
+      </button>
+
+      <!-- TODO: trigger function in threejs -->
+      <Filters client:idle />
+    </div>
+
+    <div class="mainshape-area canvas">
+      <!-- <ThreeApp
+    on:click={(evt) => {
+      didSomething = true;
+    }}
+    on:myEvent={console.log}
+  /> -->
+      <ThreeApp client:idle />
+    </div>
+
+    <div class="mainshape-area backgrounds">
+      <div class="bg opaque"></div>
+      <div class="bg transparent-gradient"></div>
+    </div>
+
+    <div class="mainshape-area space-holder"></div>
+
+    <ul class="worksContainer">
+      {
+        works.map((work, index) => (
+          <li
+            data-tags={work.data.tags.join(" ")}
+            style={`
+              --index: ${index};
+              --totalCount: ${works.length};
+              --radius: 33vmin;
+            `}
+            class="revealing-image"
+          >
+            <WorkLink
+              href={joinURL(Astro.url.pathname, work.id)}
+              data={work.data}
+              index={index}
+              imgSrc={`/images/works/${work.id}/thumbnail.webp`}
+            />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .sticky-container {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto;
+  }
+
+  .mainshape-area {
+    height: 70svh;
+    width: 100%;
+
+    grid-row: 1/2;
+    grid-column: 1/-1;
+    position: sticky;
+    top: -22svh;
+
+    @media (--media-desktop) {
+      top: var(--nav-height);
+      top: -10svh;
+    }
+  }
+
+  .mainshape-area.overlay {
+    display: grid;
+    place-content: center center;
+    justify-items: center;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .mainshape-area.canvas {
+    pointer-events: none;
+    z-index: 3;
+    @media (--media-desktop) {
+      z-index: 0;
+    }
+  }
+  .mainshape-area.backgrounds {
+    top: 0;
+    height: 33vh;
+    z-index: 2;
+    pointer-events: none;
+
+    @media (--media-desktop) {
+      display: none;
+    }
+  }
+  .mainshape-area.space-holder {
+    position: sticky;
+  }
+
+  .mainshape-area .bg {
+    width: 100%;
+    background-color: var(--bg-color);
+  }
+
+  .logotypes {
+    width: 24vh;
+    aspect-ratio: 1;
+    pointer-events: auto;
+    position: relative;
+    border-radius: 100vmax;
+    -webkit-tap-highlight-color: transparent; /* for removing the highlight */
+  }
+
+  .logotypes :global(svg) {
+    position: absolute;
+    width: 100%;
+    height: auto;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: 0.15s ease;
+  }
+  .logotypes :global(svg.active) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mainshape-area .bg.opaque {
+    pointer-events: all;
+    height: 25%;
+  }
+
+  .mainshape-area .bg.transparent-gradient {
+    pointer-events: none;
+    height: 75%;
+    background: linear-gradient(to bottom, var(--bg-color) 0%, transparent 50%);
+  }
+
+  .worksContainer {
+    margin-top: calc(-20svh + var(--nav-height));
+    margin-bottom: calc(50svh - var(--nav-height));
+    display: grid;
+    width: 100%;
+    place-content: center center;
+  }
+
+  .worksContainer li {
+    place-content: center center;
+    display: grid;
+    position: relative;
+
+    scale: 1;
+    opacity: 1;
+
+    margin-bottom: 3lh;
+
+    @media (--media-desktop) {
+      margin-bottom: 0;
+
+      transform: translateX(calc(var(--is-even) * (20vw + 5rem)));
+    }
+  }
+
+  [data-active-filters*="code"] li:not([data-tags*="code"]) > :global(*),
+  [data-active-filters*="design"] li:not([data-tags*="design"]) > :global(*),
+  [data-active-filters*="draw"] li:not([data-tags*="draw"]) > :global(*) {
+    opacity: 0.2;
+  }
+
+  @media (--media-desktop) {
+    @keyframes reveal {
+      0%,
+      10% {
+        opacity: 0.6;
+        scale: 0.7;
+      }
+      0%,
+      25% {
+        transform: translateX(calc(var(--is-even) * (2vw + 5rem)));
+      }
+      40%,
+      100% {
+        opacity: 1;
+      }
+      80%,
+      100% {
+        scale: 1;
+      }
+      80%,
+      100% {
+        transform: translateX(calc(var(--is-even) * (20vw + 5rem)));
+      }
+    }
+
+    .revealing-image {
+      view-timeline-name: --revealing-image;
+      view-timeline-axis: block;
+
+      animation: cubic-bezier(0.5, 0, 0.2, 1) reveal normal;
+      animation-timeline: --revealing-image;
+      /* animation-range: entry 0% cover 100%; */
+
+      --is-even: -1;
+      &:nth-child(2n) {
+        --is-even: 1;
+      }
+    }
+  }
+</style>

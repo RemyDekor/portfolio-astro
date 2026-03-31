@@ -1,0 +1,223 @@
+---
+import type { InferEntrySchema } from "astro:content";
+
+type Props = {
+  href: string;
+  data: InferEntrySchema<"works">;
+  imgSrc: string;
+  index: number;
+};
+const { href = "", data, imgSrc = "", index } = Astro.props;
+
+const variantChangeInterval = 1500; // ms
+const transformInterval = 500; // ms
+---
+
+<a href={href}>
+  <div
+    class="blob"
+    style={`
+  --index: ${index};
+  --focus-level: ${data.focusLevel};
+  --transform-interval: ${transformInterval}ms;
+  --variant-interval: ${variantChangeInterval}ms;
+  `}
+  >
+    <span class="thumbnail">
+      <img src={imgSrc} alt={data.title} />
+    </span>
+  </div>
+
+  <div class="link-texts underlined">
+    <h3>{data.title}</h3>
+    <p>{data.subtitle}</p>
+  </div>
+</a>
+
+<style lang="scss">
+  /* @import 'open-props/borders'; */
+  @use "sass:list";
+  @use "sass:math";
+
+  $blob-radiuses:
+    51% 49% 49% 54% / 51% 43% 55% 49%,
+    55% 47% 53% 47% / 49% 47% 53% 51%,
+    50% 51% 42% 58% / 54% 42% 56% 45%,
+    51% 49% 47% 53% / 52% 45% 57% 48%,
+    57% 43% 55% 41% / 49% 55% 45% 55%,
+    52% 42% 49% 51% / 47% 46% 55% 53%;
+
+  @property --anim-offset {
+    syntax: "<number>";
+    inherits: false;
+    initial-value: 0;
+  }
+
+  .blob {
+    --blob-size: clamp(
+      6rem,
+      calc((var(--focus-level, 0.5) * (10 - 6) + 6) * 1rem)
+        /* good candidate for postcss/scss mixin; lerp(a, b, t) = a + (b — a) * t */,
+      10rem
+    );
+    --border-size: 9px;
+    background: grey;
+    width: var(--blob-size);
+    height: var(--blob-size);
+    -webkit-tap-highlight-color: transparent; /* for removing the highlight */
+
+    --rotation-offset: calc(var(--index) * 0.25turn);
+
+    --float-radius: min(2vmin, 11px);
+    transform: translate(
+        calc(sin(var(--anim-offset) + var(--index)) * var(--float-radius)),
+        calc(cos(var(--anim-offset) + var(--index)) * var(--float-radius))
+      )
+      rotate(var(--rotation-offset));
+
+    animation: calc(10s * (1 + 0.25 * sin(var(--index)))) ease-in-out infinite
+      alternate blob-animation;
+    animation-fill-mode: forwards;
+
+    z-index: 1;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    overflow: hidden;
+
+    border: var(--border-size) solid var(--highlight-color1);
+
+    outline: none;
+    transition:
+      all 300ms ease,
+      border-radius 1s ease-in-out,
+      opacity 300ms,
+      outline 250ms 100ms,
+      border-color 300ms;
+    /* transition: border-radius calc(var(--variant-interval) * 1.1) ease-in-out, border-color 300ms,
+			opacity 300ms, outline 250ms 100ms, transform calc(var(--transform-interval) * 1.1) linear, translate 300ms; */
+  }
+
+  a {
+    &:focus-visible,
+    &:hover {
+      opacity: 1 !important;
+    }
+
+    .blob::after {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      transition: inset 100ms ease;
+      z-index: 3;
+      border-radius: inherit;
+      outline: var(--border-size) solid var(--text-color);
+    }
+
+    .blob:hover {
+      z-index: 2;
+      &::after {
+        inset: var(--border-size);
+      }
+    }
+  }
+
+  a:active {
+    transition: all 0.15s;
+    outline: none;
+  }
+
+  .thumbnail {
+    width: var(--blob-size);
+    height: var(--blob-size);
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    rotate: calc(-1 * var(--rotation-offset));
+  }
+
+  .link-texts {
+    position: absolute;
+    top: calc(100% + 1rem);
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 120%;
+
+    & p {
+      font-size: 1rem;
+      color: var(--highlight-color1);
+      text-decoration-line: none;
+      opacity: 0.7;
+      font-style: italic;
+    }
+  }
+
+  @function remap($value, $inStart, $inEnd, $outStart, $outEnd) {
+    @return calc(
+      $outStart + ($outEnd - $outStart) * ($value - $inStart) /
+        ($inEnd - $inStart)
+    );
+  }
+
+  @mixin wobble-borders() {
+    $stepCount: 9;
+    @for $i from 0 through $stepCount {
+      #{remap($i, 0, $stepCount, 0, 100)}% {
+        $blobIndex: ($i + math.random(4 * $i + 1)) % 5 + 1;
+        border-radius: list.nth($blob-radiuses, $blobIndex);
+      }
+    }
+  }
+
+  @keyframes blob-animation {
+    @include wobble-borders();
+
+    0%,
+    100% {
+      rotate: -0.007turn;
+      --anim-offset: 0;
+    }
+    50% {
+      rotate: 0.007turn;
+      --anim-offset: 1.57079633; // calc(var(--PI) * 0.5) causes css transition to break in Firefox
+    }
+  }
+</style>
+
+<!-- 
+    SCSS experiements:
+
+  @function remap($value, $inStart, $inEnd, $outStart, $outEnd) {
+    @return calc(
+      $outStart + ($outEnd - $outStart) * ($value - $inStart) /
+        ($inEnd - $inStart)
+    );
+  }
+
+    @mixin floating() {
+    $stepCount: 14;
+    @for $i from 0 through $stepCount {
+      #{remap($i, 0, $stepCount, 0, 100)}% {
+        transform: translate(
+            calc(
+              sin($i * var(--PI) * 2 / $stepCount + var(--index)) *
+                var(--float-radius) *
+                1.4
+            ),
+            calc(
+              cos($i * var(--PI) * 2 / $stepCount + var(--index)) *
+                var(--float-radius)
+            )
+          )
+          rotate(var(--rotation-offset));
+      }
+    }
+  }
+ -->

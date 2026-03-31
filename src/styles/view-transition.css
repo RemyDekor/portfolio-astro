@@ -1,0 +1,43 @@
+
+/* @view-transition {
+	navigation: auto;
+} */
+
+@keyframes move-out {
+	0% {
+    opacity:1;
+		transform: translateY(0%);
+	}
+
+	100% {
+    opacity:0;
+    filter: blur(4px);
+		transform: translateY(-10px);
+	}
+}
+
+@keyframes move-in {
+	0% {
+    opacity:0;
+    filter: blur(4px);
+		transform: translateY(-20px);
+	}
+
+	100% {
+    opacity:1;
+		transform: translateY(0%);
+	}
+}
+
+/* ::view-transition-group(*) {
+  --view-transition-duration: 0.4s;
+	animation-duration: var(--view-transition-duration);
+}
+
+::view-transition-old(*) {
+	animation: var(--view-transition-duration) ease-out both move-out;
+}
+
+::view-transition-new(*) {
+	animation:  var(--view-transition-duration) 0.1s ease-in-out both move-in;
+} */

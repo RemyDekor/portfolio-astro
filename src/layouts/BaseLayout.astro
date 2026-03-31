@@ -1,0 +1,50 @@
+---
+import { ClientRouter } from "astro:transitions";
+import Navigation from "../components/Navigation.astro";
+import "../styles/theme.css";
+
+type Props = {
+  title: string;
+};
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+  </head>
+  <body>
+    <Navigation />
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
+<ClientRouter />
+
+<style>
+  :root {
+    --nav-height: 3.5rem;
+    min-height: 100%;
+  }
+
+  html,
+  body {
+    height: 100%;
+  }
+  main {
+    display: grid;
+
+    padding-top: var(--nav-height);
+    min-height: calc(100% - var(--nav-height) - var(--page-padding-bottom));
+    padding-inline: var(--page-padding, 1rem);
+    padding-bottom: var(--page-padding-bottom);
+  }
+</style>

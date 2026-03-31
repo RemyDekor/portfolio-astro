@@ -1,0 +1,19 @@
+---
+
+---
+
+<h1>Coucou</h1>
+
+<script>
+  import p5 from "p5";
+
+  type P5 = InstanceType<typeof p5>;
+
+  const setup = (ctx: P5) => () => {
+    ctx.background("pink");
+  };
+  const draw = (ctx: P5) => () => {
+    ctx;
+    // ...
+  };
+</script>

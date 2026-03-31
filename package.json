@@ -15,7 +15,31 @@
     "@astrojs/mdx": "^5.0.0",
     "@astrojs/rss": "^4.0.17",
     "@astrojs/sitemap": "^3.7.1",
+    "@astrojs/svelte": "^8.0.4",
+    "@astrojs/vue": "^6.0.0",
+    "@threlte/core": "^8.0.2",
+    "@threlte/extras": "^9.1.2",
+    "@types/three": "^0.173.0",
     "astro": "^6.0.4",
-    "sharp": "^0.34.3"
+    "lit": "^3.3.2",
+    "lygia": "^1.4.1",
+    "nanostores": "^1.2.0",
+    "open-props": "^1.7.23",
+    "runed": "^0.37.1",
+    "sass": "^1.98.0",
+    "sharp": "^0.34.3",
+    "svelte": "^5.55.1",
+    "three": "^0.183.2",
+    "typescript": "^5.9.3",
+    "ufo": "^1.6.3",
+    "vite-plugin-glsl": "^1.5.6",
+    "vue": "^3.5.30"
+  },
+  "devDependencies": {
+    "@csstools/postcss-global-data": "^4.0.0",
+    "autoprefixer": "^10.4.27",
+    "lit-analyzer": "^2.0.3",
+    "postcss-csso": "^6.0.1",
+    "postcss-preset-env": "^11.2.0"
   }
 }

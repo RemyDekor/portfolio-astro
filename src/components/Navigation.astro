@@ -1,0 +1,175 @@
+---
+import { isEqual } from "ufo";
+
+const navItems = [
+  { text: "Home", href: "/" },
+  { text: "About", href: "/about" },
+  { text: "Works", href: "/works" },
+];
+---
+
+<nav role="navigation" aria-label="Main menu">
+  <expandable-toggle data-expandable-content-id="main-menu">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+      <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+      <path
+        fill="currentColor"
+        d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z"
+      ></path>
+    </svg>
+    <span>Menu</span>
+  </expandable-toggle>
+
+  <expandable-content id="main-menu">
+    <ul>
+      {
+        navItems.map((navItem) => (
+          <li>
+            <a
+              href={navItem.href}
+              data-astro-prefetch
+              class={
+                isEqual(Astro.url.pathname, navItem.href)
+                  ? "selected"
+                  : undefined
+              }
+            >
+              {navItem.text}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </expandable-content>
+</nav>
+
+<script>
+  import "@components/expandable";
+</script>
+
+<style>
+  nav {
+    --transition-duration-bg: 300ms;
+    --transition-duration-content: calc(var(--transition-duration-bg) * 1.5);
+
+    position: fixed;
+    top: 0;
+    padding-inline: 0.5rem;
+    min-height: var(--nav-height, 3rem);
+
+    display: flex;
+    gap: 0.5rem;
+    place-items: center center;
+
+    inset-inline: 0;
+    z-index: 5;
+
+    pointer-events: none;
+    & * {
+      pointer-events: initial;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--bg-color);
+      z-index: -1;
+
+      transition:
+        scale 0 10s ease,
+        opacity calc(var(--transition-duration-bg) * 1.5) ease;
+      visibility: hidden;
+      opacity: 0;
+      transform-origin: 0% 50%;
+      transform: scaleX(0);
+    }
+    &:has([data-expanded="true"]) {
+      &::before {
+        transition: all calc(var(--transition-duration-bg) * 1.5) ease;
+
+        visibility: visible;
+        opacity: 1;
+        transform: scaleX(1);
+      }
+    }
+  }
+
+  expandable-toggle {
+    display: grid;
+    place-content: center center;
+    --expandable-toggle-collapsed-background: var(--bg-color);
+    --expandable-toggle-expanded-background: var(--highlight-color1);
+
+    font-size: 0.6rem;
+    text-transform: uppercase;
+
+    height: fit-content;
+    min-height: var(--min-button-size);
+    aspect-ratio: 1;
+
+    border-radius: 0.333rem;
+
+    display: flex;
+    flex-direction: column;
+    place-content: center center;
+    place-items: center center;
+
+    color: var(--text-color);
+
+    & :is(svg, span) {
+      display: block;
+      overflow: hidden;
+      min-height: 1lh;
+      line-height: 1;
+    }
+    & svg {
+      padding-inline: 0.25ex;
+      height: 2.8lh;
+    }
+
+    &:not(:defined) {
+      padding: 0.25rem;
+      background: var(--expandable-toggle-collapsed-background);
+    }
+    &::part(button) {
+      padding: 0.25rem;
+      transition: all var(--transition-duration-bg) ease;
+    }
+  }
+
+  ul {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  li {
+    flex: 1 1 auto;
+    place-self: center center;
+  }
+
+  expandable-content {
+    align-self: center;
+    justify-self: center;
+
+    opacity: 1;
+    transition: all var(--transition-duration-content) ease;
+  }
+
+  expandable-content:not([open]) {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all var(--transition-duration-bg) ease;
+  }
+
+  a {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.333rem;
+    min-height: var(--min-button-size);
+  }
+
+  a.selected {
+    background-color: var(--highlight-color1);
+  }
+</style>
