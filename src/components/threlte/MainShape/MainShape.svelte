@@ -16,8 +16,8 @@
 
   const { activeIndex } = $props();
 
-  const cubeSize = 1;
-  const sphereRadius = 0.6180339887; // golden ratio
+  const cubeSize = 1 + 0.05;
+  const sphereRadius = 0.6180339887 + 0.05; // golden ratio
   const details = Math.pow(2, 6);
 
   function hexToNormalizedRgb(hex: string) {
@@ -114,7 +114,7 @@
         color2: { value: color2 },
       }}
       uniforms.roundness={{ value: roundness.current }}
-      uniforms.noiseIntensity={{ value: Math.sin(time * 2) * 0.3 }}
+      uniforms.noiseIntensity={{ value: Math.sin(time * 1.6) * 0.18 }}
       uniforms.noiseOffset={{ value: time * 0.075 }}
       uniforms.noiseScale={{ value: Math.sin(time * 0.5) * 0.5 + 0.5 }}
       vertexShader={sphericCubeVert}
