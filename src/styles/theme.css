@@ -27,14 +27,14 @@
 	/* --CornflowerBlue: #6964fa; */
 	/* colors defined using https://abc.useallfive.com/?colors[]=FB444E,00A190,FFF8F2,130749 */
 	--FloralWhite: #FFF8F2;
-	--PersianGreen: #00A190;
-	--OutrageousOrange: #ff9f19;
+	--PersianGreen: #09c8b5;
+	--OutrageousPink: #ff75b3;
 	--TitaniumYellow: #F0EF00;
-	--CetaceanBlue: #0b032d;
+	--CetaceanBlue: #080612;
 
 	/* default theme (not set) */
 	--highlight-color1: var(--PersianGreen);
-	--highlight-color2: var(--OutrageousOrange);
+	--highlight-color2: var(--OutrageousPink);
 	--highlight-color3: var(--TitaniumYellow);
 	--light-color: var(--FloralWhite);
 	--dark-color: var(--CetaceanBlue);
